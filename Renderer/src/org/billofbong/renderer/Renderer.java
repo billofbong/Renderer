@@ -5,10 +5,15 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.io.File;
+import java.io.IOException;
+import java.util.Random;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
 public class Renderer extends Canvas implements Runnable {
@@ -17,7 +22,7 @@ public class Renderer extends Canvas implements Runnable {
 	private static final long serialVersionUID = 1L;
 	
 	public static final int WIDTH = 1080;
-	public static final int HEIGHT = WIDTH / 12 * 9;
+	public static final int HEIGHT = WIDTH / 16 * 9;
 	public static final int SCALE = 3;
 	
 	public static final String NAME = "Renderer";
@@ -28,10 +33,21 @@ public class Renderer extends Canvas implements Runnable {
 	public int tickCount = 0;
 	
 	private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
+	private BufferedImage newImage = image;
 	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+	
+	Random random = new Random();
 	
 	public Renderer()
 	{
+		try {
+			image = ImageIO.read(new File("images/minion.jpg"));
+			newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+			newImage.getGraphics().drawImage(image, 0, 0, null);
+			pixels = ((DataBufferInt) newImage.getRaster().getDataBuffer()).getData();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
 		setSize(new Dimension(WIDTH, HEIGHT));
 		
 		frame = new JFrame(NAME);
@@ -82,7 +98,7 @@ public class Renderer extends Canvas implements Runnable {
 			if(System.currentTimeMillis() - lastTimer >= (1000 * 0.416666))
 			{
 				lastTimer += 1000;
-				System.out.println("Frames: " + frames + ", " + "Ticks: " + ticks);
+				System.out.println("FPS: " + frames + ", " + "Ticks: " + ticks);
 				frames = 0;
 				ticks = 0;
 			}
@@ -103,10 +119,14 @@ public class Renderer extends Canvas implements Runnable {
 	public void tick()
 	{
 		tickCount++;
-		
+		int speed = 1;
 		for(int i = 0; i < pixels.length; i++)
 		{
-			pixels[i] = i + tickCount;
+			if(i + speed < pixels.length)
+			{	
+			pixels[i] = pixels[i + speed];
+			}
+			//System.out.println(i);
 		}
 	}
 	
@@ -122,7 +142,7 @@ public class Renderer extends Canvas implements Runnable {
 		Graphics graphics = bufferStrategy.getDrawGraphics();
 		graphics.setColor(Color.BLACK);
 		graphics.drawRect(0, 0, getWidth(), getHeight());
-		graphics.drawImage(image, 0, 0, getWidth(), getHeight(), null);
+		graphics.drawImage(newImage, 0, 0, getWidth(), getHeight(), null);
 		graphics.dispose();
 		bufferStrategy.show();
 	}
