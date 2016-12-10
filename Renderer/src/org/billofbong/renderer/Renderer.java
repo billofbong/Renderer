@@ -126,7 +126,6 @@ public class Renderer extends Canvas implements Runnable {
 			{	
 			pixels[i] = pixels[i + speed];
 			}
-			//System.out.println(i);
 		}
 	}
 	
