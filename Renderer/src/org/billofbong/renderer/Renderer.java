@@ -16,14 +16,16 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
+import com.sun.corba.se.impl.naming.namingutil.IIOPEndpointInfo;
+
 public class Renderer extends Canvas implements Runnable {
 
 	
 	private static final long serialVersionUID = 1L;
 	
-	public static final int WIDTH = 1080;
-	public static final int HEIGHT = WIDTH / 16 * 9;
-	public static final int SCALE = 3;
+	public static final int WIDTH = 413;
+	public static final int HEIGHT = 549;
+	public static final int SCALE = 1;
 	
 	public static final String NAME = "Renderer";
 	
@@ -32,7 +34,7 @@ public class Renderer extends Canvas implements Runnable {
 	public boolean running = false;
 	public int tickCount = 0;
 	
-	private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
+	private BufferedImage image = new BufferedImage(WIDTH * SCALE, HEIGHT * SCALE, BufferedImage.TYPE_INT_RGB);
 	private BufferedImage newImage = image;
 	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 	
@@ -41,19 +43,26 @@ public class Renderer extends Canvas implements Runnable {
 	public Renderer()
 	{
 		try {
-			image = ImageIO.read(new File("images/minion.jpg"));
+			image = ImageIO.read(new File("Images/elfnigga.png"));
 			newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
 			newImage.getGraphics().drawImage(image, 0, 0, null);
 			pixels = ((DataBufferInt) newImage.getRaster().getDataBuffer()).getData();
+			
+			
+			for(int i = 0; i < pixels.length; i++)
+			{
+				pixels[i] = (random.nextInt(0x0a0000) + 0xf5ffff) - pixels[i];
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
-		setSize(new Dimension(WIDTH, HEIGHT));
+		setSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
 		
 		frame = new JFrame(NAME);
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
+		frame.setUndecorated(false);
 		
 		frame.add(this, BorderLayout.CENTER);
 		frame.pack();
@@ -79,7 +88,7 @@ public class Renderer extends Canvas implements Runnable {
 			long now = System.nanoTime();
 			delta += (now - lastTime) / nsPerTick;
 			lastTime = now;
-			boolean shouldRender = false;
+			boolean shouldRender = true;
 			
 			while(delta >= 1)
 			{
@@ -119,12 +128,16 @@ public class Renderer extends Canvas implements Runnable {
 	public void tick()
 	{
 		tickCount++;
-		int speed = 1;
+		int speed = 100;
 		for(int i = 0; i < pixels.length; i++)
 		{
 			if(i + speed < pixels.length)
-			{	
-			pixels[i] = pixels[i + speed];
+			{
+				pixels[i] = pixels[i + speed];
+				for(int j = 0; j <= speed; j++)
+				{
+					pixels[pixels.length - j - 1] = pixels[j];
+				}
 			}
 		}
 	}
